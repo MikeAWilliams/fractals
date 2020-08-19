@@ -1,3 +1,3 @@
 #include <optional>
 
-std::optional<int> ComputeMandelbrot(int maxIterations, double c0Real, double c0Im);
+std::optional<int> ComputeMandelbrot(const int maxIterations, const double c0Real, const double c0Im);
