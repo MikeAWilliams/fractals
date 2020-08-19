@@ -1,9 +1,11 @@
 #include "mandelbrot.h"
 
+#include <iostream>
+
 #define CATCH_CONFIG_MAIN 
 #include "catch2/catch.hpp"
 
-TEST_CASE("first call")
+TEST_CASE("CalculateMandelbrot")
 {
     auto result01 {ComputeMandelbrot(30, 0, 1)};
     REQUIRE_FALSE(result01.has_value());
@@ -25,4 +27,17 @@ TEST_CASE("first call")
     auto result55 {ComputeMandelbrot(30, 0.5, 0.5)};
     REQUIRE(result55.has_value());
     REQUIRE(5 == result55.value());
+}
+
+TEST_CASE("DrawMandelbrot")
+{
+    auto asciiRexult {ComputeAsciiMandelbrot(30, -2.0, -1.0, 1.0, 1.0, 70, 30)};
+    for(const auto& row : asciiRexult)
+    {
+        for(const auto c : row)
+        {
+            std::cout << c;
+        }
+        std::cout << std::endl;
+    }
 }
