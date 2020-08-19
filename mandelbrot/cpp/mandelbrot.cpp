@@ -15,9 +15,5 @@ std::optional<int> ComputeMandelbrot(const int maxIterations, const double c0Rea
         x2 = x * x;
         y2 = y * y;
     }
-    if(maxIterations == iteration)
-    {
-        return {};
-    }
-    return iteration;
+    return (maxIterations == iteration) ? std::optional<int>{}: iteration;
 }
