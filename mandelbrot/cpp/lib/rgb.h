@@ -8,11 +8,11 @@ class SingleShadeRGB
 {
 public:
     SingleShadeRGB(int maxIt,RGB outColor, RGB inColor);
-    RGB operator()();
-    RGB operator()(int);
+    RGB operator()() const;
+    RGB operator()(int) const;
 private:
     int maxIterations;
-    RGB outOfSetColor;
     RGB inSetColor;
+    RGB colorDelta;
 
 };
