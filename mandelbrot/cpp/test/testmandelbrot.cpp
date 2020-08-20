@@ -1,4 +1,4 @@
-#include "mandelbrot.h"
+#include "../lib/mandelbrot.h"
 
 #include <iostream>
 
