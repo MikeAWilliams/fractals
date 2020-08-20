@@ -8,7 +8,7 @@
 int main()
 {
     MandelbrotParameters params{30, -2.0, -1.0, 1.0, 1.0, 700, 400};
-    RGB outOfSetColor{65535, 65535, 65535};
+    RGB outOfSetColor{65535, 0, 65535};
     RGB inSetColor{0, 0, 0};
 
     SingleShadeRGB blackToWhite{params.maxIterations, std::move(outOfSetColor), std::move(inSetColor)};
