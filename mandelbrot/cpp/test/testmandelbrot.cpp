@@ -31,7 +31,8 @@ TEST_CASE("CalculateMandelbrot")
 
 TEST_CASE("DrawMandelbrot")
 {
-    auto asciiRexult {ComputeAsciiMandelbrot(30, -2.0, -1.0, 1.0, 1.0, 70, 30)};
+    MandelbrotParameters params {30, -2.0, -1.0, 1.0, 1.0, 70, 30};
+    auto asciiRexult {ComputeAsciiMandelbrot(params)};
     for(const auto& row : asciiRexult)
     {
         for(const auto c : row)

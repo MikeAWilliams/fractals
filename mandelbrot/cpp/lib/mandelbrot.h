@@ -2,8 +2,6 @@
 #include <vector>
 
 std::optional<int> ComputeMandelbrot(const int maxIterations, const double c0Real, const double c0Im);
-std::vector<std::vector<char>> ComputeAsciiMandelbrot(const int maxIterations, const double realMin, const double imMin, 
-    const double realMax, const double imMax, const size_t sizeX, const size_t sizeY);
 
 struct RGB
 {
@@ -20,6 +18,12 @@ public:
     virtual RGB GetInSetColor() const = 0;
 };
 
+struct MandelbrotParameters
+{
+    int maxIterations;
+    double realMin, imMin;
+    double realMax,  imMax;
+    size_t sizeX, sizeY;
+};
 
-std::vector<std::vector<RGB>> ComputeRGBMandelbrot(const ColorMap& colors, const int maxIterations, const double realMin, const double imMin, 
-    const double realMax, const double imMax, const size_t sizeX, const size_t sizeY);
+std::vector<std::vector<char>> ComputeAsciiMandelbrot(const MandelbrotParameters params);
