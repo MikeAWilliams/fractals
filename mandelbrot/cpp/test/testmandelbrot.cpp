@@ -32,7 +32,16 @@ TEST_CASE("CalculateMandelbrot")
 TEST_CASE("DrawMandelbrot")
 {
     MandelbrotParameters params {30, -2.0, -1.0, 1.0, 1.0, 70, 30};
-    auto asciiRexult {ComputeAsciiMandelbrot(params)};
+    auto asciiRexult {ComputeMandelbrot<char>(params, 
+        []()
+        {
+            return 'x';
+        },
+        [](int nIterations)
+        {
+            return ' ';
+        }
+        )};
     for(const auto& row : asciiRexult)
     {
         for(const auto c : row)
