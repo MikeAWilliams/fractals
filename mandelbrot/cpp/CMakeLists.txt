@@ -6,3 +6,4 @@ find_package(Catch2 CONFIG REQUIRED)
 
 add_subdirectory(lib)
 add_subdirectory(test)
+add_subdirectory(exe)
