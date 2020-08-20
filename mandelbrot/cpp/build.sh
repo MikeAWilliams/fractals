@@ -13,6 +13,6 @@ echo $VCPKG_ROOT
 
 cmake -G "Unix Makefiles" $SCRIPTPATH \
     -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake \
-    && make && ./mandelbrot_test
+    && make && ./test/mandelbrot_test
 
 cd $SCRIPTPATH

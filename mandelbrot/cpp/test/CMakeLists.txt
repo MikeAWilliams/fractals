@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.0)
 
 project (mandelbrot_test)
 
-add_executable(mandelbrot_test testmandelbrot.cpp)
+add_executable(mandelbrot_test testMain.cpp testmandelbrot.cpp testrgb.cpp)
 set_property(TARGET mandelbrot_test PROPERTY CXX_STANDARD 17)
 SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-pthread")
 

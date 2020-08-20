@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#define CATCH_CONFIG_MAIN 
 #include "catch2/catch.hpp"
 
 TEST_CASE("CalculateMandelbrot")
@@ -35,11 +34,11 @@ TEST_CASE("DrawMandelbrot")
     auto asciiRexult {ComputeMandelbrot<char>(params, 
         []()
         {
-            return 'x';
+            return ' ';
         },
         [](int nIterations)
         {
-            return ' ';
+            return 'x';
         }
         )};
     for(const auto& row : asciiRexult)
