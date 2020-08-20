@@ -44,3 +44,30 @@ std::vector<std::vector<char>> ComputeAsciiMandelbrot(const int maxIterations, c
     }
     return result;
 }
+
+std::vector<std::vector<RGB>> ComputeRGBMandelbrot(const ColorMap& colors, const int maxIterations, const double realMin, const double imMin, 
+    const double realMax, const double imMax, const size_t sizeX, const size_t sizeY)
+{
+    const double realPixelSize {(realMax - realMin)/(sizeX - 1)};
+    const double imaginaryPixelSize {(imMax - imMin)/(sizeY - 1)};
+    std::vector<std::vector<RGB>> result {sizeY};
+    for(size_t yIndex {0}; yIndex < sizeY; ++yIndex)
+    {
+        const double imaginary {imMin + yIndex * imaginaryPixelSize };
+
+        for(size_t xIndex{0}; xIndex < sizeX; ++xIndex)
+        {
+            const double real {realMin + xIndex * realPixelSize};
+            auto pointResult {ComputeMandelbrot(maxIterations, real, imaginary)};
+            if(pointResult.has_value())
+            {
+                result[yIndex].emplace_back(colors.GetEscapedColor(pointResult.value()));
+            }
+            else
+            {
+                result[yIndex].emplace_back(colors.GetInSetColor());
+            }
+        }
+    }
+    return result;
+}
