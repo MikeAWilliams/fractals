@@ -16,7 +16,7 @@ int main()
   
     auto rgbResult {ComputeMandelbrot<RGB>(params, blackToWhite, blackToWhite)};
     
-    std::cout << "Done computing Mandelbrot\n";
+    std::cout << "Done computing Mandelbrot. Plotting\n";
 
     pngwriter outFile(params.sizeX, params.sizeY, 0, "out.png"); 
 
@@ -29,5 +29,6 @@ int main()
         }
     }
 
+    std::cout << "Done Plotting\n";
     outFile.close();
 }
