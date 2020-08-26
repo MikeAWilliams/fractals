@@ -25,9 +25,7 @@ int main()
         for(int x{0}; x < params.sizeX; ++x)
         {
             RGB& rgb {rgbResult[y][x]};
-            //std::cout << rgb.r << " " << rgb.g << " " << rgb.b << std::endl;
             outFile.plot(x, y, rgb.r, rgb.g, rgb.b);
-            //outFile.plot(x, y, 65535, 0, 0);
         }
     }
 
