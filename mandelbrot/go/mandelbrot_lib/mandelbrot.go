@@ -1,4 +1,4 @@
-package mandelbrot
+package mandelbrot_lib
 
 import "fmt"
 

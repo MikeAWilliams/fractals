@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/MikeAWilliams/fractals/mandelbrot/go/mandelbrot"
+	mandelbrot "github.com/MikeAWilliams/fractals/mandelbrot/go/mandelbrot/mandelbrot_lib"
 )
 
 func main() {

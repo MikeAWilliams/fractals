@@ -3,7 +3,6 @@ package testMandelbrot
 import (
 	"testing"
 
-	"github.com/MikeAWilliams/fractals/mandelbrot/go/mandelbrot"
 	"github.com/stretchr/testify/require"
 )
 
