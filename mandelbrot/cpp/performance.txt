@@ -1,0 +1,26 @@
+parallel
+Performance
+-------------------------------------------------------------------------------
+/home/mumakin/fractals/mandelbrot/cpp/test/testmandelbrot.cpp:55
+...............................................................................
+
+benchmark name                                  samples       iterations    estimated
+                                                mean          low mean      high mean
+                                                std dev       low std dev   high std dev
+-------------------------------------------------------------------------------
+Mandelbrot                                              100            1    6.7603 ms
+                                                  63.909 us    61.989 us    70.417 us
+                                                  16.008 us     4.573 us    35.848 us
+serial
+Performance
+-------------------------------------------------------------------------------
+/home/mumakin/fractals/mandelbrot/cpp/test/testmandelbrot.cpp:55
+...............................................................................
+
+benchmark name                                  samples       iterations    estimated
+                                                mean          low mean      high mean
+                                                std dev       low std dev   high std dev
+-------------------------------------------------------------------------------
+Mandelbrot                                              100            1   32.3437 ms
+                                                 323.158 us   322.074 us   324.538 us
+                                                   6.204 us     5.024 us     8.689 us

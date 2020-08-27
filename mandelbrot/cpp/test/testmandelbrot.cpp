@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include "catch2/catch.hpp"
 
 TEST_CASE("CalculateMandelbrot")
@@ -49,4 +50,19 @@ TEST_CASE("DrawMandelbrot")
         }
         std::cout << std::endl;
     }
+}
+
+TEST_CASE("Performance")
+{
+    BENCHMARK("Mandelbrot") {
+        MandelbrotParameters params{30, -2.0, -1.0, 1.0, 1.0, 70, 30};
+        auto asciiResult{ComputeMandelbrot<char>(
+            params,
+            []() {
+                return ' ';
+            },
+            [](int nIterations) {
+                return 'x';
+            })};
+    };
 }
