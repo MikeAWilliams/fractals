@@ -24,6 +24,13 @@ type MandelbrotPointData struct {
 	Result      MandelbrotSetResult
 }
 
+type Parameters struct {
+	MaxIterations int
+	MinPoint      Point
+	MaxPoint      Point
+	MaxPixel      Pixel
+}
+
 func ComputeMandelbrot(maxIterations int, point CombinedPoint) MandelbrotPointData {
 	var x2 float64
 	var y2 float64

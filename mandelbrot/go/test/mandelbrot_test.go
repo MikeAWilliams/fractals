@@ -46,3 +46,23 @@ func TestComputeMandelbrot(t *testing.T) {
 	require.False(t, result55.Result.IsIn)
 	require.Equal(t, 5, result55.Result.Iterations)
 }
+
+func TestPointGeneratorNoDone(t *testing.T) {
+	params := mandelbrot_lib.Parameters{30, mandelbrot_lib.Point{-2.0, -1.0}, mandelbrot_lib.Point{1.0, 1.0}, mandelbrot_lib.Pixel{300, 300}}
+
+	done := make(chan struct{})
+	defer close(done)
+
+	pointStream := mandelbrot_lib.PointGenerator(done, params)
+
+	count := 0
+	for point := range pointStream {
+		count++
+		if point.CoordinateComplex.Real > 500 {
+			panic("oh man")
+		}
+	}
+
+	require.Equal(t, 90000, count)
+
+}
