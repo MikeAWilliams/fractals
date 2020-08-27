@@ -10,3 +10,4 @@ include_directories(${CMAKE_SOURCE_DIR}/lib)
 
 target_link_libraries(mandelbrot PRIVATE mandelbrot_lib)
 target_link_libraries(mandelbrot PRIVATE PNGwriter::PNGwriter)
+target_link_libraries(mandelbrot PRIVATE tbb)

@@ -10,3 +10,4 @@ include_directories(${CMAKE_SOURCE_DIR}/lib)
 
 target_link_libraries(mandelbrot_test PRIVATE Catch2::Catch2)
 target_link_libraries(mandelbrot_test PRIVATE mandelbrot_lib)
+target_link_libraries(mandelbrot_test PRIVATE tbb)
