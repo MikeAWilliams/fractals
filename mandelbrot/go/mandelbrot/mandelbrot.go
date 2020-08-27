@@ -1,5 +1,7 @@
 package mandelbrot
 
+import "fmt"
+
 func ComputeMandelbrot(maxIterations int, c0Real, c0Im float64) (bool, int) {
 	//x2 := 0.0
 	//y2 := 0.0
@@ -16,5 +18,6 @@ func ComputeMandelbrot(maxIterations int, c0Real, c0Im float64) (bool, int) {
 	//if maxIterations == iteration {
 	//	return true, 0
 	//}
+	fmt.Println("in ComputeMandelbrot returning false")
 	return false, 0
 }
