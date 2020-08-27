@@ -9,24 +9,40 @@ import (
 
 func TestComputeMandelbrot(t *testing.T) {
 
-	inSet, _ := mandelbrot_lib.ComputeMandelbrot(30, 0, 1)
-	require.True(t, inSet)
+	inPoint := mandelbrot_lib.CombinedPoint{mandelbrot_lib.Point{0.0, 1.0}, mandelbrot_lib.Pixel{2, 3}}
+	result01 := mandelbrot_lib.ComputeMandelbrot(30, inPoint)
+	require.True(t, result01.Result.IsIn)
+	require.Equal(t, 30, result01.Result.MaxIterations)
+	require.Equal(t, 0.0, result01.Coordinates.CoordinateComplex.Real)
+	require.Equal(t, 1.0, result01.Coordinates.CoordinateComplex.Imaginary)
+	require.Equal(t, 2, result01.Coordinates.CoordinateImage.X)
+	require.Equal(t, 3, result01.Coordinates.CoordinateImage.Y)
 
-	insetNeg10, _ := mandelbrot_lib.ComputeMandelbrot(30, -1, 0)
-	require.True(t, insetNeg10)
+	inPoint.CoordinateComplex.Real = -1
+	inPoint.CoordinateComplex.Imaginary = 0
+	resultNeg10 := mandelbrot_lib.ComputeMandelbrot(30, inPoint)
+	require.True(t, resultNeg10.Result.IsIn)
 
-	inset05, _ := mandelbrot_lib.ComputeMandelbrot(30, 0, 0.5)
-	require.True(t, inset05)
+	inPoint.CoordinateComplex.Real = 0.0
+	inPoint.CoordinateComplex.Imaginary = 0.5
+	result05 := mandelbrot_lib.ComputeMandelbrot(30, inPoint)
+	require.True(t, result05.Result.IsIn)
 
-	inset10, iter10 := mandelbrot_lib.ComputeMandelbrot(30, 1, 0)
-	require.False(t, inset10)
-	require.Equal(t, 2, iter10)
+	inPoint.CoordinateComplex.Real = 1.0
+	inPoint.CoordinateComplex.Imaginary = 0.0
+	result10 := mandelbrot_lib.ComputeMandelbrot(30, inPoint)
+	require.False(t, result10.Result.IsIn)
+	require.Equal(t, 2, result10.Result.Iterations)
 
-	inset02, iter02 := mandelbrot_lib.ComputeMandelbrot(30, 0, 2)
-	require.False(t, inset02)
-	require.Equal(t, 1, iter02)
+	inPoint.CoordinateComplex.Real = 0.0
+	inPoint.CoordinateComplex.Imaginary = 2.0
+	result02 := mandelbrot_lib.ComputeMandelbrot(30, inPoint)
+	require.False(t, result02.Result.IsIn)
+	require.Equal(t, 1, result02.Result.Iterations)
 
-	inset55, iter55 := mandelbrot_lib.ComputeMandelbrot(30, 0.5, 0.5)
-	require.False(t, inset55)
-	require.Equal(t, 5, iter55)
+	inPoint.CoordinateComplex.Real = 0.5
+	inPoint.CoordinateComplex.Imaginary = 0.5
+	result55 := mandelbrot_lib.ComputeMandelbrot(30, inPoint)
+	require.False(t, result55.Result.IsIn)
+	require.Equal(t, 5, result55.Result.Iterations)
 }
