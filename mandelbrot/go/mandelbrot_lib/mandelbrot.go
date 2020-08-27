@@ -18,6 +18,6 @@ func ComputeMandelbrot(maxIterations int, c0Real, c0Im float64) (bool, int) {
 	//if maxIterations == iteration {
 	//	return true, 0
 	//}
-	fmt.Println("in ComputeMandelbrot returning true 10")
-	return true, 10
+	fmt.Println("in ComputeMandelbrot returning false 30")
+	return false, 30
 }
