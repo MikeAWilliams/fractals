@@ -3,7 +3,7 @@ package mandelbrot
 func ComputeMandelbrot(maxIterations int, c0Real, c0Im float64) (bool, int) {
 	//x2 := 0.0
 	//y2 := 0.0
-	iteration := 0
+	var iteration int
 	//	x := 0.0
 	//y := 0.0
 
