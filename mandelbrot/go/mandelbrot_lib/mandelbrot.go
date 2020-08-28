@@ -9,9 +9,8 @@ type Pixel struct {
 }
 
 type MandelbrotSetResult struct {
-	IsIn          bool
-	Iterations    int
-	MaxIterations int
+	IsIn       bool
+	Iterations int
 }
 
 type CombinedPoint struct {
@@ -19,9 +18,14 @@ type CombinedPoint struct {
 	CoordinateImage   Pixel
 }
 
+type MandelbrotInput struct {
+	Coordinates   CombinedPoint
+	MaxIterations int
+}
+
 type MandelbrotPointData struct {
-	Coordinates CombinedPoint
-	Result      MandelbrotSetResult
+	Input  MandelbrotInput
+	Result MandelbrotSetResult
 }
 
 type Parameters struct {
@@ -31,20 +35,20 @@ type Parameters struct {
 	MaxPixel      Pixel
 }
 
-func ComputeMandelbrot(maxIterations int, point CombinedPoint) MandelbrotPointData {
+func ComputeMandelbrot(input MandelbrotInput) MandelbrotPointData {
 	var x2 float64
 	var y2 float64
 	var iteration int
 	var x float64
 	var y float64
 
-	for ; iteration < maxIterations && x2+y2 < 4; iteration++ {
-		y = 2*x*y + point.CoordinateComplex.Imaginary
-		x = x2 - y2 + point.CoordinateComplex.Real
+	for ; iteration < input.MaxIterations && x2+y2 < 4; iteration++ {
+		y = 2*x*y + input.Coordinates.CoordinateComplex.Imaginary
+		x = x2 - y2 + input.Coordinates.CoordinateComplex.Real
 		x2 = x * x
 		y2 = y * y
 	}
-	setResult := MandelbrotSetResult{maxIterations == iteration, iteration, maxIterations}
-	result := MandelbrotPointData{point, setResult}
+	setResult := MandelbrotSetResult{input.MaxIterations == iteration, iteration}
+	result := MandelbrotPointData{input, setResult}
 	return result
 }
