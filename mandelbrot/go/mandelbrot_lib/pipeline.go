@@ -137,7 +137,6 @@ func CreateColorMandelbrot(params Parameters, darkColor Color, lightColor Color,
 	colorStream := ColorPointGenerator(done, MandelbrotPointDataGenerator(done, PointGenerator(done, params)), darkColor, interpolator)
 
 	for point := range colorStream {
-		//fmt.Printf("R%v,G%v,B%v\n", point.Value.R, point.Value.G, point.Value.B)
 		result.Set(point.Coordinate.X, point.Coordinate.Y, color.NRGBA{point.Value.R, point.Value.G, point.Value.B, 255})
 	}
 
