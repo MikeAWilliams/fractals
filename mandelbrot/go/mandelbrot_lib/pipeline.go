@@ -1,6 +1,12 @@
 package mandelbrot_lib
 
-import "fmt"
+import (
+	"fmt"
+	"image"
+	"image/color"
+	"image/png"
+	"os"
+)
 
 func PointGenerator(done <-chan struct{}, params Parameters) <-chan MandelbrotInput {
 	outStream := make(chan MandelbrotInput)
@@ -91,4 +97,63 @@ func PrintASCIIMandelbrot(params Parameters) {
 	for _, row := range result {
 		fmt.Println(string(row))
 	}
+}
+
+type ColorPixel struct {
+	Coordinate Pixel
+	Value      Color
+}
+
+func ColorPointGenerator(done <-chan struct{}, points <-chan MandelbrotPointData, inSetColor Color, interpolator ColorInterpolator) <-chan ColorPixel {
+	outStream := make(chan ColorPixel)
+	go func() {
+		defer close(outStream)
+		for {
+			select {
+			case <-done:
+				return
+			case point, ok := <-points:
+				if !ok {
+					return
+				}
+				outPixel := ColorPixel{point.Input.Coordinates.CoordinateImage, inSetColor}
+				if !point.Result.IsIn {
+					outPixel.Value = interpolator.Interpolate(float64(point.Result.Iterations) / float64(point.Input.MaxIterations))
+				}
+				outStream <- outPixel
+			}
+		}
+	}()
+	return outStream
+}
+
+func CreateColorMandelbrot(params Parameters, darkColor Color, lightColor Color, fileName string) {
+	result := image.NewNRGBA(image.Rect(0, 0, params.MaxPixel.X, params.MaxPixel.Y))
+
+	interpolator := GetColorInterpolator(darkColor, lightColor)
+
+	done := make(chan struct{})
+	defer close(done)
+	colorStream := ColorPointGenerator(done, MandelbrotPointDataGenerator(done, PointGenerator(done, params)), darkColor, interpolator)
+
+	for point := range colorStream {
+		//fmt.Printf("R%v,G%v,B%v\n", point.Value.R, point.Value.G, point.Value.B)
+		result.Set(point.Coordinate.X, point.Coordinate.Y, color.NRGBA{point.Value.R, point.Value.G, point.Value.B, 255})
+	}
+
+	file, err := os.Create(fileName)
+	if err != nil {
+		panic(err)
+	}
+
+	err = png.Encode(file, result)
+	if err != nil {
+		panic(err)
+	}
+
+	err = file.Close()
+	if err != nil {
+		panic(err)
+	}
+
 }
