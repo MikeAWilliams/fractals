@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"image/png"
 	"os"
+	"time"
 )
 
 func PointGenerator(done <-chan struct{}, params Parameters) <-chan MandelbrotInput {
@@ -33,7 +34,7 @@ func PointGenerator(done <-chan struct{}, params Parameters) <-chan MandelbrotIn
 	return outStream
 }
 
-func MandelbrotPointDataGenerator(done <-chan struct{}, points <-chan MandelbrotInput) <-chan MandelbrotPointData {
+func MandelbrotPointDataCalculatorSingle(done <-chan struct{}, points <-chan MandelbrotInput) <-chan MandelbrotPointData {
 	outStream := make(chan MandelbrotPointData)
 	go func() {
 		defer close(outStream)
@@ -57,7 +58,7 @@ type ASCIIPixel struct {
 	Value      byte
 }
 
-func ASCIIPointGenerator(done <-chan struct{}, points <-chan MandelbrotPointData) <-chan ASCIIPixel {
+func ASCIIPointCalculator(done <-chan struct{}, points <-chan MandelbrotPointData) <-chan ASCIIPixel {
 	outStream := make(chan ASCIIPixel)
 	go func() {
 		defer close(outStream)
@@ -88,7 +89,7 @@ func PrintASCIIMandelbrot(params Parameters) {
 
 	done := make(chan struct{})
 	defer close(done)
-	asciiStream := ASCIIPointGenerator(done, MandelbrotPointDataGenerator(done, PointGenerator(done, params)))
+	asciiStream := ASCIIPointCalculator(done, MandelbrotPointDataCalculatorSingle(done, PointGenerator(done, params)))
 
 	for asciiPoint := range asciiStream {
 		result[asciiPoint.Coordinate.Y][asciiPoint.Coordinate.X] = asciiPoint.Value
@@ -104,7 +105,7 @@ type ColorPixel struct {
 	Value      Color
 }
 
-func ColorPointGenerator(done <-chan struct{}, points <-chan MandelbrotPointData, inSetColor Color, interpolator ColorInterpolator) <-chan ColorPixel {
+func ColorPointCalculator(done <-chan struct{}, points <-chan MandelbrotPointData, inSetColor Color, interpolator ColorInterpolator) <-chan ColorPixel {
 	outStream := make(chan ColorPixel)
 	go func() {
 		defer close(outStream)
@@ -134,11 +135,15 @@ func CreateColorMandelbrot(params Parameters, darkColor Color, lightColor Color,
 
 	done := make(chan struct{})
 	defer close(done)
-	colorStream := ColorPointGenerator(done, MandelbrotPointDataGenerator(done, PointGenerator(done, params)), darkColor, interpolator)
+	colorStream := ColorPointCalculator(done, MandelbrotPointDataCalculatorSingle(done, PointGenerator(done, params)), darkColor, interpolator)
 
+	startTime := time.Now()
 	for point := range colorStream {
 		result.Set(point.Coordinate.X, point.Coordinate.Y, color.NRGBA{point.Value.R, point.Value.G, point.Value.B, 255})
 	}
+	endTime := time.Now()
+	// around 2.8 seconds on laptop
+	fmt.Printf("The single pipe Mandelbrot took %v", endTime.Sub(startTime))
 
 	file, err := os.Create(fileName)
 	if err != nil {
