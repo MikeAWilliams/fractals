@@ -55,7 +55,7 @@ func MandelbrotPointDataCalculatorSingle(done <-chan struct{}, points <-chan Man
 	return outStream
 }
 
-func FanIn(done <-chan struct{}, channels ...<-chan MandelbrotPointData) <-chan MandelbrotPointData {
+func FanIn(done <-chan struct{}, channels []<-chan MandelbrotPointData) <-chan MandelbrotPointData {
 	var waitGroup sync.WaitGroup
 	multiplexedStream := make(chan MandelbrotPointData)
 
@@ -83,23 +83,12 @@ func FanIn(done <-chan struct{}, channels ...<-chan MandelbrotPointData) <-chan 
 	return multiplexedStream
 }
 
-func MandelbrotPointDataCalculatorFan(done <-chan struct{}, points <-chan MandelbrotInput, numchanels int) <-chan MandelbrotPointData {
-	outStream := make(chan MandelbrotPointData)
-	go func() {
-		defer close(outStream)
-		for {
-			select {
-			case <-done:
-				return
-			case point, ok := <-points:
-				if !ok {
-					return
-				}
-				outStream <- ComputeMandelbrot(point)
-			}
-		}
-	}()
-	return outStream
+func MandelbrotPointDataCalculatorFan(done <-chan struct{}, points <-chan MandelbrotInput, numCalculators int) <-chan MandelbrotPointData {
+	calculators := make([]<-chan MandelbrotPointData, numCalculators)
+	for i := 0; i < numCalculators; i++ {
+		calculators[i] = MandelbrotPointDataCalculatorSingle(done, points)
+	}
+	return FanIn(done, calculators)
 }
 
 type ASCIIPixel struct {
