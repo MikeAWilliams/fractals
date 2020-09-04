@@ -84,7 +84,7 @@ func FanIn(done <-chan struct{}, channels []<-chan MandelbrotPointData) <-chan M
 }
 
 func MandelbrotPointDataCalculatorFan(done <-chan struct{}, points <-chan MandelbrotInput, numCalculators int) <-chan MandelbrotPointData {
-	fmt.Printf("Creating %v mandelbrot caluclators", numCalculators)
+	fmt.Printf("Creating %v mandelbrot caluclators\n", numCalculators)
 	calculators := make([]<-chan MandelbrotPointData, numCalculators)
 	for i := 0; i < numCalculators; i++ {
 		calculators[i] = MandelbrotPointDataCalculatorSingle(done, points)
@@ -208,7 +208,7 @@ func CreateColorMandelbrotFan(params Parameters, darkColor Color, lightColor Col
 
 	done := make(chan struct{})
 	defer close(done)
-	colorStream := ColorPointCalculator(done, MandelbrotPointDataCalculatorFan(done, PointGenerator(done, params), runtime.NumCPU()), darkColor, interpolator)
+	colorStream := ColorPointCalculator(done, MandelbrotPointDataCalculatorFan(done, PointGenerator(done, params), runtime.NumCPU()/2), darkColor, interpolator)
 
 	startTime := time.Now()
 	for point := range colorStream {
