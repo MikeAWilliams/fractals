@@ -6,10 +6,15 @@ import (
 	"image/color"
 	"image/png"
 	"os"
+	"runtime"
+	"sync"
+	"time"
 )
 
+const bufferSize = 100
+
 func PointGenerator(done <-chan struct{}, params Parameters) <-chan MandelbrotInput {
-	outStream := make(chan MandelbrotInput)
+	outStream := make(chan MandelbrotInput, bufferSize)
 	go func() {
 		defer close(outStream)
 
@@ -33,8 +38,8 @@ func PointGenerator(done <-chan struct{}, params Parameters) <-chan MandelbrotIn
 	return outStream
 }
 
-func MandelbrotPointDataGenerator(done <-chan struct{}, points <-chan MandelbrotInput) <-chan MandelbrotPointData {
-	outStream := make(chan MandelbrotPointData)
+func MandelbrotPointDataCalculatorSingle(done <-chan struct{}, points <-chan MandelbrotInput) <-chan MandelbrotPointData {
+	outStream := make(chan MandelbrotPointData, bufferSize)
 	go func() {
 		defer close(outStream)
 		for {
@@ -52,12 +57,49 @@ func MandelbrotPointDataGenerator(done <-chan struct{}, points <-chan Mandelbrot
 	return outStream
 }
 
+func FanIn(done <-chan struct{}, channels []<-chan MandelbrotPointData) <-chan MandelbrotPointData {
+	var waitGroup sync.WaitGroup
+	multiplexedStream := make(chan MandelbrotPointData, bufferSize)
+
+	multiplexFunction := func(c <-chan MandelbrotPointData) {
+		defer waitGroup.Done()
+		for data := range c {
+			select {
+			case <-done:
+				return
+			case multiplexedStream <- data:
+			}
+		}
+	}
+
+	waitGroup.Add(len(channels))
+	for _, c := range channels {
+		go multiplexFunction(c)
+	}
+
+	go func() {
+		waitGroup.Wait()
+		close(multiplexedStream)
+	}()
+
+	return multiplexedStream
+}
+
+func MandelbrotPointDataCalculatorFan(done <-chan struct{}, points <-chan MandelbrotInput, numCalculators int) <-chan MandelbrotPointData {
+	fmt.Printf("Creating %v mandelbrot caluclators\n", numCalculators)
+	calculators := make([]<-chan MandelbrotPointData, numCalculators)
+	for i := 0; i < numCalculators; i++ {
+		calculators[i] = MandelbrotPointDataCalculatorSingle(done, points)
+	}
+	return FanIn(done, calculators)
+}
+
 type ASCIIPixel struct {
 	Coordinate Pixel
 	Value      byte
 }
 
-func ASCIIPointGenerator(done <-chan struct{}, points <-chan MandelbrotPointData) <-chan ASCIIPixel {
+func ASCIIPointCalculator(done <-chan struct{}, points <-chan MandelbrotPointData) <-chan ASCIIPixel {
 	outStream := make(chan ASCIIPixel)
 	go func() {
 		defer close(outStream)
@@ -88,7 +130,7 @@ func PrintASCIIMandelbrot(params Parameters) {
 
 	done := make(chan struct{})
 	defer close(done)
-	asciiStream := ASCIIPointGenerator(done, MandelbrotPointDataGenerator(done, PointGenerator(done, params)))
+	asciiStream := ASCIIPointCalculator(done, MandelbrotPointDataCalculatorSingle(done, PointGenerator(done, params)))
 
 	for asciiPoint := range asciiStream {
 		result[asciiPoint.Coordinate.Y][asciiPoint.Coordinate.X] = asciiPoint.Value
@@ -104,8 +146,8 @@ type ColorPixel struct {
 	Value      Color
 }
 
-func ColorPointGenerator(done <-chan struct{}, points <-chan MandelbrotPointData, inSetColor Color, interpolator ColorInterpolator) <-chan ColorPixel {
-	outStream := make(chan ColorPixel)
+func ColorPointCalculator(done <-chan struct{}, points <-chan MandelbrotPointData, inSetColor Color, interpolator ColorInterpolator) <-chan ColorPixel {
+	outStream := make(chan ColorPixel, bufferSize)
 	go func() {
 		defer close(outStream)
 		for {
@@ -127,18 +169,60 @@ func ColorPointGenerator(done <-chan struct{}, points <-chan MandelbrotPointData
 	return outStream
 }
 
-func CreateColorMandelbrot(params Parameters, darkColor Color, lightColor Color, fileName string) {
+func CreateColorMandelbrotSingle(params Parameters, darkColor Color, lightColor Color, fileName string) {
 	result := image.NewNRGBA(image.Rect(0, 0, params.MaxPixel.X, params.MaxPixel.Y))
 
 	interpolator := GetColorInterpolator(darkColor, lightColor)
 
 	done := make(chan struct{})
 	defer close(done)
-	colorStream := ColorPointGenerator(done, MandelbrotPointDataGenerator(done, PointGenerator(done, params)), darkColor, interpolator)
+	colorStream := ColorPointCalculator(done, MandelbrotPointDataCalculatorSingle(done, PointGenerator(done, params)), darkColor, interpolator)
 
+	startTime := time.Now()
 	for point := range colorStream {
 		result.Set(point.Coordinate.X, point.Coordinate.Y, color.NRGBA{point.Value.R, point.Value.G, point.Value.B, 255})
 	}
+	endTime := time.Now()
+	// with buffer size 0 around 2.8 seconds on laptop
+	// with buffer size 100 around 1.04 seconds on laptop
+	fmt.Printf("The single pipe Mandelbrot took %v", endTime.Sub(startTime))
+
+	file, err := os.Create(fileName)
+	if err != nil {
+		panic(err)
+	}
+
+	err = png.Encode(file, result)
+	if err != nil {
+		panic(err)
+	}
+
+	err = file.Close()
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func CreateColorMandelbrotFan(params Parameters, darkColor Color, lightColor Color, fileName string) {
+	result := image.NewNRGBA(image.Rect(0, 0, params.MaxPixel.X, params.MaxPixel.Y))
+
+	interpolator := GetColorInterpolator(darkColor, lightColor)
+
+	done := make(chan struct{})
+	defer close(done)
+	colorStream := ColorPointCalculator(done, MandelbrotPointDataCalculatorFan(done, PointGenerator(done, params), runtime.NumCPU()/2), darkColor, interpolator)
+
+	startTime := time.Now()
+	for point := range colorStream {
+		result.Set(point.Coordinate.X, point.Coordinate.Y, color.NRGBA{point.Value.R, point.Value.G, point.Value.B, 255})
+	}
+	endTime := time.Now()
+	// single with buffer size 0 is around 2.8 seconds on laptop
+	// with buffer size 100 around 1.04 seconds on laptop
+	// fan with buffer size 0 takes around 4.4 seconds on laptop
+	// fan with buffer size 100 takes around 2.3 seconds on laptop
+	fmt.Printf("The fan pipe Mandelbrot took %v", endTime.Sub(startTime))
 
 	file, err := os.Create(fileName)
 	if err != nil {
