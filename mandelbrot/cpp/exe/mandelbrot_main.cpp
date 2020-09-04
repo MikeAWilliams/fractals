@@ -4,6 +4,7 @@
 #include "pngwriter.h"
 
 #include <iostream>
+#include <chrono>  
 
 int main()
 {
@@ -13,10 +14,14 @@ int main()
 
     SingleShadeRGB blackToWhite{params.maxIterations, std::move(outOfSetColor), std::move(inSetColor)};
     std::cout << "Computing Mandelbrot\n";
-  
-    auto rgbResult {ComputeMandelbrot<RGB>(params, blackToWhite, blackToWhite)};
     
-    std::cout << "Done computing Mandelbrot. Plotting\n";
+    auto start {std::chrono::high_resolution_clock::now()};
+    auto rgbResult {ComputeMandelbrot<RGB>(params, blackToWhite, blackToWhite)};
+    auto stop {std::chrono::high_resolution_clock::now()};
+    auto duration {std::chrono::duration_cast<std::chrono::milliseconds>(stop - start)}; 
+    
+    // time on laptop was 81 milliseconds
+    std::cout << "Done computing Mandelbrot. Time was " << duration.count() << " milliseconds. Plotting\n";
 
     pngwriter outFile(params.sizeX, params.sizeY, 0, "out.png"); 
 
