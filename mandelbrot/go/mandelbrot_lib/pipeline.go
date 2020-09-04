@@ -84,6 +84,7 @@ func FanIn(done <-chan struct{}, channels []<-chan MandelbrotPointData) <-chan M
 }
 
 func MandelbrotPointDataCalculatorFan(done <-chan struct{}, points <-chan MandelbrotInput, numCalculators int) <-chan MandelbrotPointData {
+	fmt.Printf("Creating %v mandelbrot caluclators", numCalculators)
 	calculators := make([]<-chan MandelbrotPointData, numCalculators)
 	for i := 0; i < numCalculators; i++ {
 		calculators[i] = MandelbrotPointDataCalculatorSingle(done, points)
@@ -215,6 +216,7 @@ func CreateColorMandelbrotFan(params Parameters, darkColor Color, lightColor Col
 	}
 	endTime := time.Now()
 	// single is around 2.8 seconds on laptop
+	// fan takes around 4.4 seconds on laptop
 	fmt.Printf("The fan pipe Mandelbrot took %v", endTime.Sub(startTime))
 
 	file, err := os.Create(fileName)
