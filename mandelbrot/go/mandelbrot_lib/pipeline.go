@@ -53,6 +53,25 @@ func MandelbrotPointDataCalculatorSingle(done <-chan struct{}, points <-chan Man
 	return outStream
 }
 
+func MandelbrotPointDataCalculatorFan(done <-chan struct{}, points <-chan MandelbrotInput) <-chan MandelbrotPointData {
+	outStream := make(chan MandelbrotPointData)
+	go func() {
+		defer close(outStream)
+		for {
+			select {
+			case <-done:
+				return
+			case point, ok := <-points:
+				if !ok {
+					return
+				}
+				outStream <- ComputeMandelbrot(point)
+			}
+		}
+	}()
+	return outStream
+}
+
 type ASCIIPixel struct {
 	Coordinate Pixel
 	Value      byte
@@ -128,7 +147,7 @@ func ColorPointCalculator(done <-chan struct{}, points <-chan MandelbrotPointDat
 	return outStream
 }
 
-func CreateColorMandelbrot(params Parameters, darkColor Color, lightColor Color, fileName string) {
+func CreateColorMandelbrotSingle(params Parameters, darkColor Color, lightColor Color, fileName string) {
 	result := image.NewNRGBA(image.Rect(0, 0, params.MaxPixel.X, params.MaxPixel.Y))
 
 	interpolator := GetColorInterpolator(darkColor, lightColor)
@@ -143,6 +162,40 @@ func CreateColorMandelbrot(params Parameters, darkColor Color, lightColor Color,
 	}
 	endTime := time.Now()
 	// around 2.8 seconds on laptop
+	fmt.Printf("The single pipe Mandelbrot took %v", endTime.Sub(startTime))
+
+	file, err := os.Create(fileName)
+	if err != nil {
+		panic(err)
+	}
+
+	err = png.Encode(file, result)
+	if err != nil {
+		panic(err)
+	}
+
+	err = file.Close()
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func CreateColorMandelbrotFan(params Parameters, darkColor Color, lightColor Color, fileName string) {
+	result := image.NewNRGBA(image.Rect(0, 0, params.MaxPixel.X, params.MaxPixel.Y))
+
+	interpolator := GetColorInterpolator(darkColor, lightColor)
+
+	done := make(chan struct{})
+	defer close(done)
+	colorStream := ColorPointCalculator(done, MandelbrotPointDataCalculatorFan(done, PointGenerator(done, params)), darkColor, interpolator)
+
+	startTime := time.Now()
+	for point := range colorStream {
+		result.Set(point.Coordinate.X, point.Coordinate.Y, color.NRGBA{point.Value.R, point.Value.G, point.Value.B, 255})
+	}
+	endTime := time.Now()
+	// single is around 2.8 seconds on laptop
 	fmt.Printf("The single pipe Mandelbrot took %v", endTime.Sub(startTime))
 
 	file, err := os.Create(fileName)
