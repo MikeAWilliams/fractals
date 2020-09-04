@@ -10,5 +10,5 @@ func main() {
 	outColor := mandelbrot_lib.Color{255, 255, 255}
 	fileName := "out.png"
 
-	mandelbrot_lib.CreateColorMandelbrotFan(params, inSetColor, outColor, fileName)
+	mandelbrot_lib.CreateColorMandelbrotSingle(params, inSetColor, outColor, fileName)
 }

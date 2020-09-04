@@ -11,8 +11,10 @@ import (
 	"time"
 )
 
+const bufferSize = 100
+
 func PointGenerator(done <-chan struct{}, params Parameters) <-chan MandelbrotInput {
-	outStream := make(chan MandelbrotInput)
+	outStream := make(chan MandelbrotInput, bufferSize)
 	go func() {
 		defer close(outStream)
 
@@ -37,7 +39,7 @@ func PointGenerator(done <-chan struct{}, params Parameters) <-chan MandelbrotIn
 }
 
 func MandelbrotPointDataCalculatorSingle(done <-chan struct{}, points <-chan MandelbrotInput) <-chan MandelbrotPointData {
-	outStream := make(chan MandelbrotPointData)
+	outStream := make(chan MandelbrotPointData, bufferSize)
 	go func() {
 		defer close(outStream)
 		for {
@@ -57,7 +59,7 @@ func MandelbrotPointDataCalculatorSingle(done <-chan struct{}, points <-chan Man
 
 func FanIn(done <-chan struct{}, channels []<-chan MandelbrotPointData) <-chan MandelbrotPointData {
 	var waitGroup sync.WaitGroup
-	multiplexedStream := make(chan MandelbrotPointData)
+	multiplexedStream := make(chan MandelbrotPointData, bufferSize)
 
 	multiplexFunction := func(c <-chan MandelbrotPointData) {
 		defer waitGroup.Done()
@@ -145,7 +147,7 @@ type ColorPixel struct {
 }
 
 func ColorPointCalculator(done <-chan struct{}, points <-chan MandelbrotPointData, inSetColor Color, interpolator ColorInterpolator) <-chan ColorPixel {
-	outStream := make(chan ColorPixel)
+	outStream := make(chan ColorPixel, bufferSize)
 	go func() {
 		defer close(outStream)
 		for {
@@ -181,7 +183,8 @@ func CreateColorMandelbrotSingle(params Parameters, darkColor Color, lightColor 
 		result.Set(point.Coordinate.X, point.Coordinate.Y, color.NRGBA{point.Value.R, point.Value.G, point.Value.B, 255})
 	}
 	endTime := time.Now()
-	// around 2.8 seconds on laptop
+	// with buffer size 0 around 2.8 seconds on laptop
+	// with buffer size 100 around 1.04 seconds on laptop
 	fmt.Printf("The single pipe Mandelbrot took %v", endTime.Sub(startTime))
 
 	file, err := os.Create(fileName)
@@ -215,8 +218,10 @@ func CreateColorMandelbrotFan(params Parameters, darkColor Color, lightColor Col
 		result.Set(point.Coordinate.X, point.Coordinate.Y, color.NRGBA{point.Value.R, point.Value.G, point.Value.B, 255})
 	}
 	endTime := time.Now()
-	// single is around 2.8 seconds on laptop
-	// fan takes around 4.4 seconds on laptop
+	// single with buffer size 0 is around 2.8 seconds on laptop
+	// with buffer size 100 around 1.04 seconds on laptop
+	// fan with buffer size 0 takes around 4.4 seconds on laptop
+	// fan with buffer size 100 takes around 2.3 seconds on laptop
 	fmt.Printf("The fan pipe Mandelbrot took %v", endTime.Sub(startTime))
 
 	file, err := os.Create(fileName)
