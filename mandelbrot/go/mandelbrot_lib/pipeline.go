@@ -6,6 +6,8 @@ import (
 	"image/color"
 	"image/png"
 	"os"
+	"runtime"
+	"sync"
 	"time"
 )
 
@@ -53,7 +55,35 @@ func MandelbrotPointDataCalculatorSingle(done <-chan struct{}, points <-chan Man
 	return outStream
 }
 
-func MandelbrotPointDataCalculatorFan(done <-chan struct{}, points <-chan MandelbrotInput) <-chan MandelbrotPointData {
+func FanIn(done <-chan struct{}, channels ...<-chan MandelbrotPointData) <-chan MandelbrotPointData {
+	var waitGroup sync.WaitGroup
+	multiplexedStream := make(chan MandelbrotPointData)
+
+	multiplexFunction := func(c <-chan MandelbrotPointData) {
+		defer waitGroup.Done()
+		for data := range c {
+			select {
+			case <-done:
+				return
+			case multiplexedStream <- data:
+			}
+		}
+	}
+
+	waitGroup.Add(len(channels))
+	for _, c := range channels {
+		go multiplexFunction(c)
+	}
+
+	go func() {
+		waitGroup.Wait()
+		close(multiplexedStream)
+	}()
+
+	return multiplexedStream
+}
+
+func MandelbrotPointDataCalculatorFan(done <-chan struct{}, points <-chan MandelbrotInput, numchanels int) <-chan MandelbrotPointData {
 	outStream := make(chan MandelbrotPointData)
 	go func() {
 		defer close(outStream)
@@ -188,7 +218,7 @@ func CreateColorMandelbrotFan(params Parameters, darkColor Color, lightColor Col
 
 	done := make(chan struct{})
 	defer close(done)
-	colorStream := ColorPointCalculator(done, MandelbrotPointDataCalculatorFan(done, PointGenerator(done, params)), darkColor, interpolator)
+	colorStream := ColorPointCalculator(done, MandelbrotPointDataCalculatorFan(done, PointGenerator(done, params), runtime.NumCPU()), darkColor, interpolator)
 
 	startTime := time.Now()
 	for point := range colorStream {
@@ -196,7 +226,7 @@ func CreateColorMandelbrotFan(params Parameters, darkColor Color, lightColor Col
 	}
 	endTime := time.Now()
 	// single is around 2.8 seconds on laptop
-	fmt.Printf("The single pipe Mandelbrot took %v", endTime.Sub(startTime))
+	fmt.Printf("The fan pipe Mandelbrot took %v", endTime.Sub(startTime))
 
 	file, err := os.Create(fileName)
 	if err != nil {
