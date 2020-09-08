@@ -29,5 +29,5 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
-	mandelbrot_lib.CreateColorMandelbrotNoPipeSingle(params, inSetColor, outColor, fileName)
+	mandelbrot_lib.CreateColorMandelbrotNoPipeGoroutines(params, inSetColor, outColor, fileName)
 }
