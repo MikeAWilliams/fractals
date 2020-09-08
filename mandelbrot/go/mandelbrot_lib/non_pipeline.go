@@ -54,22 +54,21 @@ func CreateColorMandelbrotNoPipeSingle(params Parameters, darkColor Color, light
 }
 
 func CreateColorMandelbrotNoPipeGoroutines(params Parameters, darkColor Color, lightColor Color, fileName string) {
+	startTime := time.Now()
+
 	interpolator := GetColorInterpolator(darkColor, lightColor)
 	outPixels := make([][]ColorPixel, params.MaxPixel.Y)
-	for yPixel := 0; yPixel < params.MaxPixel.Y; yPixel++ {
-		outPixels[yPixel] = make([]ColorPixel, params.MaxPixel.X)
-	}
 
 	var wg sync.WaitGroup
 	wg.Add(params.MaxPixel.Y)
 
-	startTime := time.Now()
 	realPixelSize := (params.MaxPoint.Real - params.MinPoint.Real) / float64(params.MaxPixel.X-1)
 	imaginaryPixelSize := (params.MaxPoint.Imaginary - params.MinPoint.Imaginary) / float64(params.MaxPixel.Y-1)
 
 	for yPixel := 0; yPixel < params.MaxPixel.Y; yPixel++ {
 		go func(yIndex int) {
 			defer wg.Done()
+			outPixels[yIndex] = make([]ColorPixel, params.MaxPixel.X)
 			imaginary := params.MinPoint.Imaginary + float64(yIndex)*imaginaryPixelSize
 			for xPixel := 0; xPixel < params.MaxPixel.X; xPixel++ {
 				real := params.MinPoint.Real + float64(xPixel)*realPixelSize
