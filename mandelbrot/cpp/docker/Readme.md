@@ -1,0 +1,1 @@
+A friend made this because he was having trouble building in a container. It intalls vcpkg because cmake requires it. However, it does not use vcpkg to get the dependencies. Whatever works
