@@ -5,15 +5,16 @@
 
 RGB* globalRGB = nullptr;
 
-extern "C" { RGB* simplified_mandelbrot(int realMin, int imMin, int realMax, int imMax, int sizeX, int sizeY)
+extern "C" { RGB* simplified_mandelbrot(double realMin, double imMin, double realMax, double imMax, int sizeX, int sizeY)
 {
+    std::cout << "Mandelbrot params (" << realMin << "," << imMin << ") (" << realMax << "," << imMax << ")\n";
     delete globalRGB;
-    MandelbrotParameters params
-        {30
-        ,static_cast<double>(realMin)
-        ,static_cast<double>(imMin)
-        ,static_cast<double>(realMax)
-        ,static_cast<double>(imMax)
+    MandelbrotParameters params {
+        30
+        ,realMin
+        ,imMin
+        ,realMax
+        ,imMax
         ,static_cast<size_t>(sizeX)
         ,static_cast<size_t>(sizeY)};
     RGB outOfSetColor{255, 255, 255};

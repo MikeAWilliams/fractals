@@ -37,22 +37,50 @@
     var currentImMax = initialImMax
 
     var selectionStart = null
+
     selectionCanvas.onmousemove = (event) => {
       if (null != selectionStart) {
-        selectionContext.clearRect(0, 0, canvas.width, canvas.height)
+        clearSelectionRectangle()
         drawRectange(selectionStart.x, selectionStart.y, event.clientX, event.clientY, 'white')
       }
     }
 
     selectionCanvas.onmousedown = (event) => {
-      console.log(`down ${window.pageXOffset}`)
       selectionStart = {
         x: event.clientX - selectionCanvasBoundingRect.left,
         y: event.clientY - selectionCanvasBoundingRect.top
       }
     }
     selectionCanvas.onmouseup = (event) => {
-      selectionStart = null
+      if (null != selectionStart) {
+        clearSelectionRectangle()
+        updateMandelbrot(selectionStart.x, selectionStart.y, event.clientX, event.clientY)
+        selectionStart = null
+      }
+    }
+
+    const updateMandelbrot = (startX, startY, stopX, stopY) => {
+      topLeftX = Math.min(startX, stopX)
+      topLeftY = Math.min(startY, stopY)
+      bottomRightX = Math.max(startX, stopX)
+      bottomRightY = Math.max(startY, stopY)
+      let newRealMin = interpolate(currentRealMin, currentRealMax, 0, canvas.width, topLeftX)
+      let newImMin = interpolate(currentImMin, currentImMax, 0, canvas.height, topLeftY)
+      let newRealMax = interpolate(currentRealMin, currentRealMax, 0, canvas.width, bottomRightX)
+      let newImMax = interpolate(currentImMin, currentImMax, 0, canvas.height, bottomRightY)
+
+      drawMandelbrot(newRealMin, newImMin, newRealMax, newImMax)
+    }
+
+    const interpolate = (destinationMin, destinationMax, sourceMin, sourceMax, sourceValue) => {
+      let sourceWidth = sourceMax - sourceMin
+      let sourceOffset = sourceValue - sourceMin
+      let destinationWidth = destinationMax - destinationMin
+      return destinationMin + sourceOffset/sourceWidth * destinationWidth
+    }
+
+    const clearSelectionRectangle = () => {
+      selectionContext.clearRect(0, 0, canvas.width, canvas.height)
     }
 
     const drawRectange = (startX, startY, endX, endY, color) => {
@@ -83,11 +111,6 @@
 
     Module['onRuntimeInitialized'] = () => {
       drawMandelbrot(initialRealMin, initialImMin, initialRealMax, initialImMax)
-
-      // Request next animation frame and re-render with updated circles
-      // window.requestAnimationFrame( () => {
-      //render( dataLength, circleStructSize )
-      //})
     }
 
   </script>
