@@ -1,1 +1,1 @@
-em++ -std=c++17 -O3 -s TOTAL_MEMORY=100MB -s wasm_driver.cpp rgb.cpp mandelbrot.cpp -sEXPORTED_FUNCTIONS=_simplified_mandelbrot -o mandelbrot.js
+em++ -std=c++17 -O3 -s TOTAL_MEMORY=100MB wasm_driver.cpp rgb.cpp mandelbrot.cpp -sEXPORTED_FUNCTIONS=_simplified_mandelbrot -o mandelbrot.js
