@@ -1,46 +1,96 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Mandelbrot Demo</title>
-    <style media="screen">
-      body, canvas {
-        margin: 0;
+
+<head>
+  <meta charset="utf-8">
+  <title>Mandelbrot Demo</title>
+</head>
+
+<body>
+  <div style="position: relative;">
+    <canvas id="canvas" width="1920" height="1080" style="
+          position:absolute;
+          left:0px;
+          top:0px;
+          z-index:1;"></canvas>
+    <canvas id="selectionRectangle" width="1920" height="1080" style="
+          position:absolute;
+          left:0px;
+          top:0px;
+          z-index:2;"></canvas>
+  </div>
+  <script src="mandelbrot.js"></script>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const context = canvas.getContext('2d')
+    const selectionCanvas = document.getElementById('selectionRectangle')
+    const selectionContext = selectionCanvas.getContext('2d')
+    const selectionCanvasBoundingRect = selectionCanvas.getBoundingClientRect()
+
+    const initialRealMin = -2
+    const initialImMin = -1
+    const initialRealMax = 1
+    const initialImMax = 1
+    var currentRealMin = initialRealMin
+    var currentImMin = initialImMin
+    var currentRealMax = initialRealMax
+    var currentImMax = initialImMax
+
+    var selectionStart = null
+    selectionCanvas.onmousemove = (event) => {
+      if (null != selectionStart) {
+        selectionContext.clearRect(0, 0, canvas.width, canvas.height)
+        drawRectange(selectionStart.x, selectionStart.y, event.clientX, event.clientY, 'white')
       }
-    </style>
-  </head>
-  <body>
-    <canvas id="canvas" width="1920" height="1080"></canvas>
-    <script src="mandelbrot.js"></script>
-    <script>
+    }
 
-      const canvas = document.getElementById('canvas')
-      const context = canvas.getContext('2d')
+    selectionCanvas.onmousedown = (event) => {
+      console.log(`down ${window.pageXOffset}`)
+      selectionStart = {
+        x: event.clientX - selectionCanvasBoundingRect.left,
+        y: event.clientY - selectionCanvasBoundingRect.top
+      }
+    }
+    selectionCanvas.onmouseup = (event) => {
+      selectionStart = null
+    }
 
+    const drawRectange = (startX, startY, endX, endY, color) => {
+      let width = endX - startX
+      let height = endY - startY
+      selectionContext.strokeStyle = color
+      selectionContext.strokeRect(startX, startY, width, height)
+    }
 
-      //const render = ( dataLength, circleStructSize ) => {
-      Module['onRuntimeInitialized'] = () => {
+    const drawMandelbrot = (realMin, imMin, realMax, imMax) => {
+      currentRealMin = realMin
+      currentImMin = imMin
+      currentRealMax = realMax
+      currentImMax = imMax
+      let pixels = new Int32Array(wasmMemory.buffer, _simplified_mandelbrot(realMin, imMin, realMax, imMax, canvas.width, canvas.height), canvas.width * canvas.height * 3)
 
-        let pixels = new Int32Array( wasmMemory.buffer, _simplified_mandelbrot(-2, -1, 1, 1, canvas.width, canvas.height ), canvas.width * canvas.height * 3 )
-        console.log(`width ${canvas.width} height ${canvas.height}`)
+      context.clearRect(0, 0, canvas.width, canvas.height)
 
-        context.clearRect( 0, 0, canvas.width, canvas.height )
-
-        for(let y = 0; y < canvas.height; y++){
-            for(let x = 0; x < canvas.width; x++){
-                let index = (y*canvas.width + x) * 3
-                let pixel = pixels.slice(index, index + 3)
-                context.fillStyle = `rgb( ${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
-                context.fillRect( x, y, 1, 1 );
-            }
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          let index = (y * canvas.width + x) * 3
+          let pixel = pixels.slice(index, index + 3)
+          context.fillStyle = `rgb( ${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+          context.fillRect(x, y, 1, 1);
         }
-
-        // Request next animation frame and re-render with updated circles
-       // window.requestAnimationFrame( () => {
-          //render( dataLength, circleStructSize )
-        //})
       }
+    }
 
-    </script>
-  </body>
+    Module['onRuntimeInitialized'] = () => {
+      drawMandelbrot(initialRealMin, initialImMin, initialRealMax, initialImMax)
+
+      // Request next animation frame and re-render with updated circles
+      // window.requestAnimationFrame( () => {
+      //render( dataLength, circleStructSize )
+      //})
+    }
+
+  </script>
+</body>
+
 </html>
