@@ -1,5 +1,5 @@
-#include "rgb.h"
-#include "mandelbrot.h"
+#include "../lib/rgb.h"
+#include "../lib/mandelbrot.h"
 
 #include <iostream>
 #include <chrono>  
