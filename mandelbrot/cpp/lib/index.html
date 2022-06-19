@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Mandelbrot Demo</title>
+    <style media="screen">
+      body, canvas {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="1920" height="1080"></canvas>
+    <script src="mandelbrot.js"></script>
+    <script>
+
+      const canvas = document.getElementById('canvas')
+      const context = canvas.getContext('2d')
+
+
+      //const render = ( dataLength, circleStructSize ) => {
+      Module['onRuntimeInitialized'] = () => {
+
+        let pixels = new Int32Array( wasmMemory.buffer, _simplified_mandelbrot(-2, -1, 1, 1, canvas.width, canvas.height ), canvas.width * canvas.height * 3 )
+        console.log(`width ${canvas.width} height ${canvas.height}`)
+
+        context.clearRect( 0, 0, canvas.width, canvas.height )
+
+        for(let y = 0; y < canvas.height; y++){
+            for(let x = 0; x < canvas.width; x++){
+                let index = (y*canvas.width + x) * 3
+                let pixel = pixels.slice(index, index + 3)
+                context.fillStyle = `rgb( ${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+                context.fillRect( x, y, 1, 1 );
+            }
+        }
+
+        // Request next animation frame and re-render with updated circles
+       // window.requestAnimationFrame( () => {
+          //render( dataLength, circleStructSize )
+        //})
+      }
+
+    </script>
+  </body>
+</html>
