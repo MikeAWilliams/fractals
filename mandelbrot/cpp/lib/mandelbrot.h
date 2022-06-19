@@ -37,7 +37,8 @@ std::vector<std::vector<pixelType>> ComputeMandelbrot(
         tmpVec[yIndex].result = &result[yIndex];
         tmpVec[yIndex].imaginary= params.imMin + yIndex * imaginaryPixelSize;
     }
-    std::for_each(std::execution::par, tmpVec.cbegin(), tmpVec.cend(), 
+    //std::for_each(std::execution::par, tmpVec.cbegin(), tmpVec.cend(), 
+    std::for_each(tmpVec.cbegin(), tmpVec.cend(), 
         [&params, &getInSetPixel, &getOutOfSetPixel, &realPixelSize](auto& vecElem)
     {
         for(size_t xIndex{0}; xIndex < params.sizeX; ++xIndex)

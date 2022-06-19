@@ -1,0 +1,1 @@
+em++ -std=c++17 -s wasm_driver.cpp rgb.cpp mandelbrot.cpp -sEXPORTED_FUNCTIONS=_simplified_mandelbrot -o mandelbrot.js
