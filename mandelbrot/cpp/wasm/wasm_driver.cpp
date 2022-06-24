@@ -8,7 +8,7 @@ RGB* globalRGB = nullptr;
 extern "C" { RGB* simplified_mandelbrot(double realMin, double imMin, double realMax, double imMax, int sizeX, int sizeY)
 {
     std::cout << "Mandelbrot params (" << realMin << "," << imMin << ") (" << realMax << "," << imMax << ")\n";
-    delete globalRGB;
+    delete[] globalRGB;
     MandelbrotParameters params {
         30
         ,realMin

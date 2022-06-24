@@ -38,6 +38,7 @@ std::vector<std::vector<pixelType>> ComputeMandelbrot(
         tmpVec[yIndex].imaginary= params.imMin + yIndex * imaginaryPixelSize;
     }
     // can't get emscripten to compile with parallel execution
+    // passing -pthread didn't work
     //std::for_each(std::execution::par, tmpVec.cbegin(), tmpVec.cend(), 
     std::for_each(tmpVec.cbegin(), tmpVec.cend(), 
         [&params, &getInSetPixel, &getOutOfSetPixel, &realPixelSize](auto& vecElem)
